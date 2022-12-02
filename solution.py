@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import timeit
-from typing import Union
+from typing import Union, Callable
 
 
 class AdventOfCodeSolution:
@@ -13,12 +13,18 @@ class AdventOfCodeSolution:
     def main(self, day: int) -> Union[str, int]:
         match day:
             case 1:
-                self.day_one()
+                self.run_day(self.day_one)
             case 2:
-                self.day_two()
+                self.run_day(self.day_two)
             case other:
                 raise NotImplementedError('This day has not been implemented yet.')
 
+    def run_day(self, day_solution: Callable):
+        start_time = timeit.default_timer()
+        day_solution()
+        delta = timeit.default_timer() - start_time
+        print(f'\nRan in: {delta}s\n\n')
+    
     def day_one(self):
         with open(os.path.join(self.__location__, 'day01/input.txt'), 'r') as raw_input:
             input_data: str = raw_input.read()
@@ -44,7 +50,4 @@ class AdventOfCodeSolution:
 if __name__ == '__main__':
     while True:
         day_input = int(input('Which day do you want to run? '))
-        start_time = timeit.default_timer()
         AdventOfCodeSolution(day_input)
-        delta = timeit.default_timer() - start_time
-        print(f'\nRan in: {delta}s\n\n')
