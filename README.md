@@ -19,4 +19,9 @@ I was a part of Advent of Code in 2022 in two languages, Python to train my opti
     <td>0.005s</td>
     <td>-</td>
   </tr>
+  <tr>
+    <td>3</td>
+    <td>0.02s</td>
+    <td>-</td>
+  </tr>
 </table> 
