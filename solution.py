@@ -3,10 +3,11 @@ import scipy as sp
 import os
 import timeit
 from functools import reduce
+from pydantic import BaseModel
 from typing import Union, Callable
 
 
-class AdventOfCodeSolution:
+class AdventOfCodeSolution():
     def __init__(self, day: int):
         self.__location__: str = os.path.realpath(
             os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -20,6 +21,8 @@ class AdventOfCodeSolution:
                 self.run_day(self.day_two)
             case 3:
                 self.run_day(self.day_three)
+            case 4:
+                self.run_day(self.day_four)
             case other:
                 raise NotImplementedError(
                     'This day has not been implemented yet.')
@@ -35,8 +38,8 @@ class AdventOfCodeSolution:
         with open(os.path.join(self.__location__, 'day01/input.txt'), 'r') as raw_input:
             input_data: str = raw_input.read()
 
-        input_array: np.array = np.array([np.sum(np.array(line, dtype=object)) for line in list(
-            map(lambda each: list(map(int, each.split('\n'))), input_data.split('\n\n')))], dtype=object)
+        input_array: np.array = np.array([np.sum(np.array(line, dtype=int)) for line in list(
+            map(lambda each: list(map(int, each.split('\n'))), input_data.split('\n\n')))], dtype=int)
 
         max_idx: int = np.argmax(input_array)
 
@@ -44,7 +47,6 @@ class AdventOfCodeSolution:
             f'Elf number {max_idx} is carrying the most calories, with {input_array[max_idx]} calories.')
 
         # Part 2
-
         total_calories = np.sum(np.sort(input_array)[-3:])
 
         print(
@@ -55,8 +57,8 @@ class AdventOfCodeSolution:
         with open(os.path.join(self.__location__, 'day02/input.txt'), 'r') as raw_input:
             raw_input_data: list = raw_input.read().splitlines()
 
-        input_data = np.array([np.array(line.split(), dtype=object)
-                              for line in raw_input_data], dtype=object)
+        input_data = np.array([np.array(line.split(), dtype=str)
+                              for line in raw_input_data], dtype=str)
 
         def calculate_rps_outcome(input: Union[np.array, list]) -> int:
             total_points = 0
@@ -101,11 +103,12 @@ class AdventOfCodeSolution:
             return total_points
 
         answer1 = np.sum(np.array([calculate_rps_outcome(game)
-                         for game in input_data], dtype=object))
+                         for game in input_data], dtype=int))
 
         print(
             f'My total score, if everything goes exactly according to the strategy guide, is {answer1}')
 
+        # Part 2
         def calculate_rps_outcome_winlose(input: Union[np.array, list]) -> int:
             total_points = 0
 
@@ -155,7 +158,7 @@ class AdventOfCodeSolution:
             return total_points
 
         answer2 = np.sum(np.array([calculate_rps_outcome_winlose(
-            game) for game in input_data], dtype=object))
+            game) for game in input_data], dtype=int))
 
         print(
             f'My total score, if everything goes exactly according to the strategy guide and understanding the elf, is {answer2}')
@@ -165,7 +168,7 @@ class AdventOfCodeSolution:
         with open(os.path.join(self.__location__, 'day03/input.txt'), 'r') as raw_input:
             raw_input_data: list = raw_input.read().splitlines()
 
-        split_lines = np.array([(np.array(list(line[:len(line)//2]), dtype=object), np.array(list(line[len(line)//2:]), dtype=object))
+        split_lines = np.array([(np.array(list(line[:len(line)//2]), dtype=str), np.array(list(line[len(line)//2:]), dtype=str))
                                for line in raw_input_data], dtype=object)
 
         def calculate_priority(input: str) -> int:
@@ -175,18 +178,52 @@ class AdventOfCodeSolution:
             return ord(input) - 38
 
         sum_of_rucksacks = np.sum(np.array([calculate_priority(np.intersect1d(
-            rucksack[0], rucksack[1])[0]) for rucksack in split_lines], dtype=object))
+            rucksack[0], rucksack[1])[0]) for rucksack in split_lines], dtype=int))
 
-        print(f'The sum of the item type that appears in both compartments of each rucksack is {sum_of_rucksacks}.')
+        print(
+            f'The sum of the item type that appears in both compartments of each rucksack is {sum_of_rucksacks}.')
 
         # Part 2
-        concat_lines = (np.array([reduce(np.intersect1d, (np.array(list(raw_input_data[line_idx]), dtype=object), np.array(list(raw_input_data[line_idx+1]), dtype=object), np.array(list(raw_input_data[line_idx+2]), dtype=object))) for line_idx in range(len(raw_input_data))[::3]], dtype=object)).flatten()
+        concat_lines = (np.array([reduce(np.intersect1d, (np.array(list(raw_input_data[line_idx]), dtype=str), np.array(list(raw_input_data[line_idx+1]),
+                        dtype=str), np.array(list(raw_input_data[line_idx+2]), dtype=str))) for line_idx in range(len(raw_input_data))[::3]], dtype=str)).flatten()
 
         applyall = np.vectorize(calculate_priority)
 
         concat_lines_sum = np.sum(applyall(concat_lines))
 
-        print(f'The sum of the item types that correspond to the badge of each of the three-Elf groups is {concat_lines_sum}.')
+        print(
+            f'The sum of the item types that correspond to the badge of each of the three-Elf groups is {concat_lines_sum}.')
+
+    def day_four(self) -> str:
+        # Part 1
+        with open(os.path.join(self.__location__, 'day04/input.txt'), 'r') as raw_input:
+            raw_input_data: np.array = np.array(
+                raw_input.read().splitlines(), dtype=str)
+
+        parsed_lines = np.array([np.array([range_str.split(
+            '-') for range_str in line.split(',')]).flatten() for line in raw_input_data]).astype(np.int16)
+
+        def range_is_contained(input: Union[list, np.array]) -> bool:
+            if ((input[0] <= input[2]) and (input[1] >= input[3])) or ((input[0] >= input[2]) and (input[1] <= input[3])):
+                return True
+
+            return False
+
+        result = np.count_nonzero(
+            np.array(list(map(range_is_contained, parsed_lines)), dtype=bool))
+
+        print(f'In {result} assignment pairs one range fully contains the other.')
+
+        # Part 2
+        def range_overlaps(input: Union[list, np.array]) -> bool:
+            if ((input[0] <= input[2] and input[1] >= input[2]) or (input[0] <= input[3] and input[1] >= input[2])):
+                return True
+
+            return False
+
+        result2 = np.count_nonzero(np.array(list(map(range_overlaps, parsed_lines)), dtype=bool))
+        print(f'The ranges overlap in {result2} assignment pairs.')
+
 
 if __name__ == '__main__':
     day_input = int(input('Which day do you want to run? '))
